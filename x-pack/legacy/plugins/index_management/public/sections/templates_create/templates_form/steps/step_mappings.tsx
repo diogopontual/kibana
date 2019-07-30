@@ -17,10 +17,16 @@ import {
 } from '@elastic/eui';
 import { MappingsEditor, Mappings } from '../../../../../static/ui';
 import { mappingDocumentationLink } from '../../../../lib/documentation_links';
+import { Template } from '../../../../../common/types';
+
+interface Props {
+  template: Template;
+  updateTemplate: (updatedTemplate: Partial<Template>) => void;
+}
 
 type GetMappingsEditorDataHandler = () => { isValid: boolean; data: Mappings };
 
-export const StepMappings = () => {
+export const StepMappings: React.FunctionComponent<Props> = () => {
   const getMappingsEditorData = useRef<GetMappingsEditorDataHandler>(() => ({
     isValid: true,
     data: {},
@@ -30,7 +36,7 @@ export const StepMappings = () => {
     (getMappingsEditorData.current = handler);
 
   return (
-    <div data-test-subj="stepSettings">
+    <div data-test-subj="stepMappings">
       <EuiFlexGroup justifyContent="spaceBetween">
         <EuiFlexItem grow={false}>
           <EuiTitle>
@@ -48,7 +54,7 @@ export const StepMappings = () => {
             <p>
               <FormattedMessage
                 id="xpack.idxMgmt.templatesForm.stepMappings.mappingsDescription"
-                defaultMessage="Define mappings that will be applied to a new index."
+                defaultMessage="Define how documents and their fields are stored and indexed."
               />
             </p>
           </EuiText>

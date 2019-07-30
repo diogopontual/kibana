@@ -207,7 +207,7 @@ export const TemplateDetails: React.FunctionComponent<Props> = ({
         data-test-subj="templateDetails"
         aria-labelledby="templateDetailsFlyoutTitle"
         size="m"
-        maxWidth={400}
+        maxWidth={500}
       >
         <EuiFlyoutHeader>
           <EuiTitle size="m">

@@ -6,9 +6,9 @@
 
 export interface Template {
   name: string;
-  version: number;
-  order: number;
   indexPatterns: string[];
+  version?: number | '';
+  order?: number | '';
   settings?: {
     index?: {
       [key: string]: any;

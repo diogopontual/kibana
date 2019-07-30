@@ -13,23 +13,45 @@ import {
   EuiForm,
   EuiSpacer,
 } from '@elastic/eui';
+import { Template } from '../../../../common/types';
 import { TemplateSteps } from './template_steps';
-import { StepAliases, StepLogistics, StepMappings, StepSettings, StepSummary } from './steps';
+import { StepAliases, StepLogistics, StepMappings, StepSettings, StepReview } from './steps';
+
+const defaultTemplate: Template = {
+  name: '',
+  version: '',
+  order: '',
+  indexPatterns: [],
+  settings: {},
+  aliases: {},
+  mappings: {},
+};
+interface Props {
+  template: Template;
+  updateTemplate: (updatedTemplate: Partial<Template>) => void;
+}
 
 export const TemplatesForm: React.FunctionComponent = ({}) => {
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [maxCompletedStep, setMaxCompletedStep] = useState<number>(0);
+  const [template, setTemplate] = useState<Template>(defaultTemplate);
 
-  const stepComponentMap: { [key: number]: React.FunctionComponent } = {
+  const stepComponentMap: { [key: number]: React.FunctionComponent<Props> } = {
     1: StepLogistics,
     2: StepSettings,
     3: StepMappings,
     4: StepAliases,
-    5: StepSummary,
+    5: StepReview,
   };
 
   const lastStep = Object.keys(stepComponentMap).length;
-  const CurrentStep = stepComponentMap[currentStep];
+
+  const CurrentStepComponent = stepComponentMap[currentStep];
+
+  const updateTemplate = (updatedTemplate: Partial<Template>): void => {
+    const newTemplate = { ...template, ...updatedTemplate };
+    setTemplate(newTemplate);
+  };
 
   const updateCurrentStep = (step: number) => {
     if (maxCompletedStep < step - 1) {
@@ -60,7 +82,7 @@ export const TemplatesForm: React.FunctionComponent = ({}) => {
       />
       <EuiSpacer size="l" />
       <EuiForm>
-        <CurrentStep />
+        <CurrentStepComponent template={template} updateTemplate={updateTemplate} />
         <EuiSpacer size="l" />
 
         <EuiFlexGroup>

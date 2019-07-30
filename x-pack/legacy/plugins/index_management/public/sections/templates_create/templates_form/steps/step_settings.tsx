@@ -17,8 +17,16 @@ import {
 } from '@elastic/eui';
 import { FormattedMessage } from '@kbn/i18n/react';
 import { settingsDocumentationLink } from '../../../../lib/documentation_links';
+import { Template } from '../../../../../common/types';
 
-export const StepSettings: React.FunctionComponent = ({}) => {
+interface Props {
+  template: Template;
+  updateTemplate: (updatedTemplate: Partial<Template>) => void;
+}
+
+export const StepSettings: React.FunctionComponent<Props> = ({ template, updateTemplate }) => {
+  const { settings } = template;
+
   return (
     <div data-test-subj="stepSettings">
       <EuiFlexGroup justifyContent="spaceBetween">
@@ -38,7 +46,7 @@ export const StepSettings: React.FunctionComponent = ({}) => {
             <p>
               <FormattedMessage
                 id="xpack.idxMgmt.templatesForm.stepSettings.settingsDescription"
-                defaultMessage="Define index settings that will be applied to a new index."
+                defaultMessage="Define how your indices behave."
               />
             </p>
           </EuiText>
@@ -92,8 +100,14 @@ export const StepSettings: React.FunctionComponent = ({}) => {
               defaultMessage="Index settings editor"
             />
           }
+          value={JSON.stringify(settings, null, 2)}
           onChange={(value: string) => {
-            // todo implement
+            try {
+              const parsedSettings = JSON.parse(value);
+              updateTemplate({ settings: parsedSettings });
+            } catch (e) {
+              // TODO: handle error
+            }
           }}
           data-test-subj="settingsEditor"
         />

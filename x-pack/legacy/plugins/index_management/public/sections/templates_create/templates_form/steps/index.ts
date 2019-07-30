@@ -8,4 +8,4 @@ export { StepLogistics } from './step_logistics';
 export { StepAliases } from './step_aliases';
 export { StepMappings } from './step_mappings';
 export { StepSettings } from './step_settings';
-export { StepSummary } from './step_summary';
+export { StepReview } from './step_review';

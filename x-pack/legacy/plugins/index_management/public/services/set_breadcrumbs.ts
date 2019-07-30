@@ -24,18 +24,18 @@ const breadcrumbsMap: {
   [key: string]: Breadcrumb;
 } = {
   templatesCreate: {
-    text: i18n.translate('xpack.idxMgmt.breadcrumb.createLabel', {
-      defaultMessage: 'Create',
+    text: i18n.translate('xpack.idxMgmt.breadcrumb.createTemplateLabel', {
+      defaultMessage: 'Create template',
     }),
   },
   templatesEdit: {
-    text: i18n.translate('xpack.idxMgmt.breadcrumb.editLabel', {
-      defaultMessage: 'Edit',
+    text: i18n.translate('xpack.idxMgmt.breadcrumb.editTemplateLabel', {
+      defaultMessage: 'Edit template',
     }),
   },
   templatesClone: {
-    text: i18n.translate('xpack.idxMgmt.breadcrumb.cloneLabel', {
-      defaultMessage: 'Clone',
+    text: i18n.translate('xpack.idxMgmt.breadcrumb.cloneTemplateLabel', {
+      defaultMessage: 'Clone template',
     }),
   },
 };

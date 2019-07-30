@@ -17,10 +17,19 @@ import {
   EuiFieldNumber,
 } from '@elastic/eui';
 import { FormattedMessage } from '@kbn/i18n/react';
+import { Template } from '../../../../../common/types';
+import { templatesDocumentationLink } from '../../../../lib/documentation_links';
 
-export const StepLogistics: React.FunctionComponent = ({}) => {
+interface Props {
+  template: Template;
+  updateTemplate: (updatedTemplate: Partial<Template>) => void;
+}
+
+export const StepLogistics: React.FunctionComponent<Props> = ({ template, updateTemplate }) => {
+  const { name, order, version } = template;
+
   return (
-    <div>
+    <div data-test-subj="stepLogistics">
       <EuiFlexGroup justifyContent="spaceBetween">
         <EuiFlexItem grow={false}>
           <EuiTitle>
@@ -45,8 +54,13 @@ export const StepLogistics: React.FunctionComponent = ({}) => {
         </EuiFlexItem>
 
         <EuiFlexItem grow={false}>
-          {/** TODO add href */}
-          <EuiButtonEmpty size="s" flush="right" href={''} target="_blank" iconType="help">
+          <EuiButtonEmpty
+            size="s"
+            flush="right"
+            href={templatesDocumentationLink}
+            target="_blank"
+            iconType="help"
+          >
             <FormattedMessage
               id="xpack.idxMgmt.templatesForm.stepLogistics.docsButtonLabel"
               defaultMessage="Index Templates docs"
@@ -54,9 +68,7 @@ export const StepLogistics: React.FunctionComponent = ({}) => {
           </EuiButtonEmpty>
         </EuiFlexItem>
       </EuiFlexGroup>
-
       <EuiSpacer size="l" />
-
       {/* Name */}
       <EuiDescribedFormGroup
         title={
@@ -88,16 +100,16 @@ export const StepLogistics: React.FunctionComponent = ({}) => {
           fullWidth
         >
           <EuiFieldText
-            onChange={() => {
-              // todo implement
+            value={name}
+            onChange={e => {
+              updateTemplate({ name: e.target.value });
             }}
             fullWidth
           />
         </EuiFormRow>
       </EuiDescribedFormGroup>
-
-      {/* Index patterns */}
-      <EuiDescribedFormGroup
+      {/* TODO Index patterns, fetch index patterns */}
+      {/* <EuiDescribedFormGroup
         title={
           <EuiTitle size="s">
             <h3>
@@ -127,7 +139,7 @@ export const StepLogistics: React.FunctionComponent = ({}) => {
           fullWidth
         >
           <EuiFieldText // todo change to combo box
-            onChange={() => {
+            onChange={e => {
               // todo implement
             }}
             fullWidth
@@ -150,7 +162,7 @@ export const StepLogistics: React.FunctionComponent = ({}) => {
         description={
           <FormattedMessage
             id="xpack.idxMgmt.templatesForm.stepLogistics.orderDescription"
-            defaultMessage="Multiple templates can potentially match an index, in this case, both the settings and mappings are merged into the final configuration. The order of the merging can be controlled using the order parameter, with lower order being applied first, and higher orders overriding them."
+            defaultMessage="The order parameter controls the order of merging if multiple templates match an index."
           />
         }
         idAria="stepLogisticsOrderDescription"
@@ -166,14 +178,14 @@ export const StepLogistics: React.FunctionComponent = ({}) => {
           fullWidth
         >
           <EuiFieldNumber
-            onChange={() => {
-              // todo implement
+            value={order}
+            onChange={e => {
+              updateTemplate({ order: Number(e.target.value) });
             }}
             fullWidth
           />
         </EuiFormRow>
-      </EuiDescribedFormGroup>
-
+      </EuiDescribedFormGroup>{' '}
       {/* Version */}
       <EuiDescribedFormGroup
         title={
@@ -189,7 +201,7 @@ export const StepLogistics: React.FunctionComponent = ({}) => {
         description={
           <FormattedMessage
             id="xpack.idxMgmt.templatesForm.stepLogistics.versionDescription"
-            defaultMessage="Templates can optionally add a version number, which can be any integer value, in order to simplify template management by external systems."
+            defaultMessage="A version number can be used to simplify template management by external systems."
           />
         }
         idAria="stepLogisticsVersionDescription"
@@ -205,8 +217,9 @@ export const StepLogistics: React.FunctionComponent = ({}) => {
           fullWidth
         >
           <EuiFieldNumber
-            onChange={() => {
-              // todo implement
+            value={version}
+            onChange={e => {
+              updateTemplate({ version: Number(e.target.value) });
             }}
             fullWidth
           />

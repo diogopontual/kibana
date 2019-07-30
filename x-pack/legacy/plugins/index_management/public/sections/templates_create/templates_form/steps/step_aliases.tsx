@@ -17,10 +17,16 @@ import {
 } from '@elastic/eui';
 import { FormattedMessage } from '@kbn/i18n/react';
 import { aliasesDocumentationLink } from '../../../../lib/documentation_links';
+import { Template } from '../../../../../common/types';
 
-export const StepAliases: React.FunctionComponent = ({}) => {
+interface Props {
+  template: Template;
+  updateTemplate: (updatedTemplate: Partial<Template>) => void;
+}
+
+export const StepAliases: React.FunctionComponent<Props> = ({}) => {
   return (
-    <div>
+    <div data-test-subj="stepAliases">
       <EuiFlexGroup justifyContent="spaceBetween">
         <EuiFlexItem grow={false}>
           <EuiTitle>
@@ -38,7 +44,7 @@ export const StepAliases: React.FunctionComponent = ({}) => {
             <p>
               <FormattedMessage
                 id="xpack.idxMgmt.templatesForm.stepAliases.aliasesDescription"
-                defaultMessage="Define aliases that will be applied to a new index."
+                defaultMessage="Use aliases to refer to the destination index by different names when making requests against Elasticsearch APIs."
               />
             </p>
           </EuiText>
