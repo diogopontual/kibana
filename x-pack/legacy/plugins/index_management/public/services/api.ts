@@ -202,13 +202,15 @@ export function loadIndexTemplates() {
 }
 
 export const deleteTemplates = async (names: Array<Template['name']>) => {
-  const uimActionType = names.length > 1 ? UIM_TEMPLATE_DELETE_MANY : UIM_TEMPLATE_DELETE;
-
-  return sendRequest({
+  const result = sendRequest({
     path: `${apiPrefix}/templates/${names.map(name => encodeURIComponent(name)).join(',')}`,
     method: 'delete',
-    uimActionType,
   });
+
+  const uimActionType = names.length > 1 ? UIM_TEMPLATE_DELETE_MANY : UIM_TEMPLATE_DELETE;
+
+  trackUiMetric(METRIC_TYPE.COUNT, uimActionType);
+  return result;
 };
 
 export function loadIndexTemplate(name: Template['name']) {

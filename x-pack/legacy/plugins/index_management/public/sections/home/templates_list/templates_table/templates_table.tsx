@@ -4,7 +4,7 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
-import React, { useState, Fragment } from 'react';
+import React, { useState, useEffect, Fragment } from 'react';
 import { i18n } from '@kbn/i18n';
 import { FormattedMessage } from '@kbn/i18n/react';
 import {
@@ -245,19 +245,20 @@ export const TemplatesTable: React.FunctionComponent<Props> = ({ templates, relo
 
   return (
     <Fragment>
-      {templatesToDelete.length ? (
+      {templatesToDelete && templatesToDelete.length > 0 ? (
         <DeleteTemplatesModal
           callback={data => {
             if (data && data.hasDeletedTemplates) {
               reload();
+            } else {
+              setTemplatesToDelete([]);
             }
-            setTemplatesToDelete([]);
           }}
           templatesToDelete={templatesToDelete}
         />
       ) : null}
       <EuiInMemoryTable
-        items={templates}
+        items={templates || []}
         itemId="name"
         columns={columns}
         search={searchConfig}

@@ -188,13 +188,14 @@ export const TemplateDetails: React.FunctionComponent<Props> = ({
 
   return (
     <Fragment>
-      {templateToDelete.length ? (
+      {templateToDelete && templateToDelete.length > 0 ? (
         <DeleteTemplatesModal
           callback={data => {
             if (data && data.hasDeletedTemplates) {
               reload();
+            } else {
+              setTemplateToDelete([]);
             }
-            setTemplateToDelete([]);
             onClose();
           }}
           templatesToDelete={templateToDelete}
@@ -238,7 +239,7 @@ export const TemplateDetails: React.FunctionComponent<Props> = ({
               <EuiFlexItem grow={false}>
                 <EuiButtonEmpty
                   color="danger"
-                  onClick={setTemplateToDelete.bind(null, [templateName])}
+                  onClick={() => setTemplateToDelete([templateName])}
                   data-test-subj="deleteTemplateButton"
                 >
                   <FormattedMessage
