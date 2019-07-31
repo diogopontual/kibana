@@ -9,14 +9,16 @@ export interface Template {
   indexPatterns: string[];
   version?: number | '';
   order?: number | '';
-  settings?: {
-    index?: {
-      [key: string]: any;
-      lifecycle?: {
-        name: string;
+  settings?:
+    | string
+    | {
+        index?: {
+          [key: string]: any;
+          lifecycle?: {
+            name: string;
+          };
+        };
       };
-    };
-  };
-  aliases?: object;
-  mappings?: object;
+  aliases?: object | string;
+  mappings?: object | string;
 }

@@ -17,14 +17,16 @@ import {
 } from '@elastic/eui';
 import { FormattedMessage } from '@kbn/i18n/react';
 import { aliasesDocumentationLink } from '../../../../lib/documentation_links';
-import { Template } from '../../../../../common/types';
+import { StepProps } from '../types';
 
-interface Props {
-  template: Template;
-  updateTemplate: (updatedTemplate: Partial<Template>) => void;
-}
+export const StepAliases: React.FunctionComponent<StepProps> = ({
+  template,
+  updateTemplate,
+  errors,
+}) => {
+  const { aliases } = template;
+  const { aliases: aliasesError } = errors;
 
-export const StepAliases: React.FunctionComponent<Props> = ({}) => {
   return (
     <div data-test-subj="stepAliases">
       <EuiFlexGroup justifyContent="spaceBetween">
@@ -76,6 +78,8 @@ export const StepAliases: React.FunctionComponent<Props> = ({}) => {
             defaultMessage="Aliases"
           />
         }
+        isInvalid={Boolean(aliasesError)}
+        error={aliasesError}
         fullWidth
       >
         <EuiCodeEditor
@@ -98,8 +102,9 @@ export const StepAliases: React.FunctionComponent<Props> = ({}) => {
               defaultMessage="Aliases editor"
             />
           }
-          onChange={(value: string) => {
-            // todo implement
+          value={aliases}
+          onChange={(newAliases: string) => {
+            updateTemplate({ aliases: newAliases });
           }}
           data-test-subj="aliasesEditor"
         />

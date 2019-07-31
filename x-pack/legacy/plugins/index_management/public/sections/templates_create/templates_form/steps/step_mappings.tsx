@@ -4,7 +4,7 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
-import React, { useRef } from 'react';
+import React, { Fragment } from 'react';
 import { FormattedMessage } from '@kbn/i18n/react';
 import {
   EuiFormRow,
@@ -15,25 +15,11 @@ import {
   EuiText,
   EuiButtonEmpty,
 } from '@elastic/eui';
-import { MappingsEditor, Mappings } from '../../../../../static/ui';
 import { mappingDocumentationLink } from '../../../../lib/documentation_links';
-import { Template } from '../../../../../common/types';
+import { StepProps } from '../types';
 
-interface Props {
-  template: Template;
-  updateTemplate: (updatedTemplate: Partial<Template>) => void;
-}
-
-type GetMappingsEditorDataHandler = () => { isValid: boolean; data: Mappings };
-
-export const StepMappings: React.FunctionComponent<Props> = () => {
-  const getMappingsEditorData = useRef<GetMappingsEditorDataHandler>(() => ({
-    isValid: true,
-    data: {},
-  }));
-
-  const setGetMappingsEditorDataHandler = (handler: GetMappingsEditorDataHandler) =>
-    (getMappingsEditorData.current = handler);
+export const StepMappings: React.FunctionComponent<StepProps> = ({ children, errors }) => {
+  const { mappings: mappingsError } = errors;
 
   return (
     <div data-test-subj="stepMappings">
@@ -78,7 +64,7 @@ export const StepMappings: React.FunctionComponent<Props> = () => {
 
       <EuiSpacer size="l" />
 
-      {/* Settings code editor */}
+      {/* Mappings plugin */}
       <EuiFormRow
         label={
           <FormattedMessage
@@ -86,12 +72,11 @@ export const StepMappings: React.FunctionComponent<Props> = () => {
             defaultMessage="Mappings"
           />
         }
+        isInvalid={Boolean(mappingsError)}
+        error={mappingsError}
         fullWidth
       >
-        <MappingsEditor
-          setGetDataHandler={setGetMappingsEditorDataHandler}
-          FormattedMessage={FormattedMessage}
-        />
+        <Fragment>{children}</Fragment>
       </EuiFormRow>
     </div>
   );

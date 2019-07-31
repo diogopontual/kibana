@@ -18,12 +18,7 @@ import {
   EuiText,
 } from '@elastic/eui';
 import { FormattedMessage } from '@kbn/i18n/react';
-import { Template } from '../../../../../common/types';
-
-interface Props {
-  template: Template;
-  updateTemplate: (updatedTemplate: Partial<Template>) => void;
-}
+import { StepProps } from '../types';
 
 const NoneDescriptionText = () => (
   <FormattedMessage
@@ -48,7 +43,7 @@ const getDescriptionText = (data: any) => {
   );
 };
 
-export const StepReview: React.FunctionComponent<Props> = ({ template }) => {
+export const StepReview: React.FunctionComponent<StepProps> = ({ template }) => {
   const { name, indexPatterns, version, order, mappings, settings, aliases } = template;
 
   const numIndexPatterns = indexPatterns.length;

@@ -3,8 +3,10 @@
  * or more contributor license agreements. Licensed under the Elastic License;
  * you may not use this file except in compliance with the Elastic License.
  */
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
+  EuiComboBox,
+  EuiComboBoxOptionProps,
   EuiFlexGroup,
   EuiFlexItem,
   EuiTitle,
@@ -19,14 +21,28 @@ import {
 import { FormattedMessage } from '@kbn/i18n/react';
 import { Template } from '../../../../../common/types';
 import { templatesDocumentationLink } from '../../../../lib/documentation_links';
+import { loadIndexPatterns } from '../../../../services/api';
+import { StepProps } from '../types';
 
-interface Props {
-  template: Template;
-  updateTemplate: (updatedTemplate: Partial<Template>) => void;
-}
+export const StepLogistics: React.FunctionComponent<StepProps> = ({
+  template,
+  updateTemplate,
+  errors,
+}) => {
+  const { name, order, version, indexPatterns } = template;
+  const { name: nameError, indexPatterns: indexPatternsError } = errors;
 
-export const StepLogistics: React.FunctionComponent<Props> = ({ template, updateTemplate }) => {
-  const { name, order, version } = template;
+  const [allIndexPatterns, setAllIndexPatterns] = useState<Template['indexPatterns']>([]);
+
+  const getIndexPatterns = async () => {
+    const indexPatternObjects = await loadIndexPatterns();
+    const titles = indexPatternObjects.map((indexPattern: any) => indexPattern.attributes.title);
+    setAllIndexPatterns(titles);
+  };
+
+  useEffect(() => {
+    getIndexPatterns();
+  }, []);
 
   return (
     <div data-test-subj="stepLogistics">
@@ -97,6 +113,8 @@ export const StepLogistics: React.FunctionComponent<Props> = ({ template, update
               defaultMessage="Name (required)"
             />
           }
+          isInvalid={Boolean(nameError)}
+          error={nameError}
           fullWidth
         >
           <EuiFieldText
@@ -108,8 +126,8 @@ export const StepLogistics: React.FunctionComponent<Props> = ({ template, update
           />
         </EuiFormRow>
       </EuiDescribedFormGroup>
-      {/* TODO Index patterns, fetch index patterns */}
-      {/* <EuiDescribedFormGroup
+      {/* Index patterns */}
+      <EuiDescribedFormGroup
         title={
           <EuiTitle size="s">
             <h3>
@@ -136,17 +154,45 @@ export const StepLogistics: React.FunctionComponent<Props> = ({ template, update
               defaultMessage="Index patterns (required)"
             />
           }
+          helpText={
+            <FormattedMessage
+              id="xpack.idxMgmt.templatesForm.stepLogistics.fieldIndexPatternsHelpText"
+              defaultMessage={`Index patterns must match at least one index. Spaces and the characters \ / ? " < > | are not allowed.`}
+            />
+          }
+          isInvalid={Boolean(indexPatternsError)}
+          error={indexPatternsError}
           fullWidth
         >
-          <EuiFieldText // todo change to combo box
-            onChange={e => {
-              // todo implement
-            }}
+          <EuiComboBox
             fullWidth
+            options={allIndexPatterns.map(indexPattern => ({
+              label: indexPattern,
+            }))}
+            data-test-subj="indexPatternsComboBox"
+            selectedOptions={(indexPatterns || []).map((indexPattern: string) => {
+              return {
+                label: indexPattern,
+                value: indexPattern,
+              };
+            })}
+            onChange={(selectedPattern: EuiComboBoxOptionProps[]) => {
+              const newIndexPatterns = selectedPattern.map(({ label }) => label);
+              updateTemplate({ indexPatterns: newIndexPatterns });
+            }}
+            onCreateOption={(selectedPattern: string) => {
+              if (!selectedPattern.trim().length) {
+                return;
+              }
+
+              const newIndexPatterns = [...indexPatterns, selectedPattern];
+
+              setAllIndexPatterns([...allIndexPatterns, selectedPattern]);
+              updateTemplate({ indexPatterns: newIndexPatterns });
+            }}
           />
         </EuiFormRow>
       </EuiDescribedFormGroup>
-
       {/* Order */}
       <EuiDescribedFormGroup
         title={

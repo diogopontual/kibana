@@ -17,15 +17,15 @@ import {
 } from '@elastic/eui';
 import { FormattedMessage } from '@kbn/i18n/react';
 import { settingsDocumentationLink } from '../../../../lib/documentation_links';
-import { Template } from '../../../../../common/types';
+import { StepProps } from '../types';
 
-interface Props {
-  template: Template;
-  updateTemplate: (updatedTemplate: Partial<Template>) => void;
-}
-
-export const StepSettings: React.FunctionComponent<Props> = ({ template, updateTemplate }) => {
+export const StepSettings: React.FunctionComponent<StepProps> = ({
+  template,
+  updateTemplate,
+  errors,
+}) => {
   const { settings } = template;
+  const { settings: settingsError } = errors;
 
   return (
     <div data-test-subj="stepSettings">
@@ -78,6 +78,8 @@ export const StepSettings: React.FunctionComponent<Props> = ({ template, updateT
             defaultMessage="Index settings"
           />
         }
+        isInvalid={Boolean(settingsError)}
+        error={settingsError}
         fullWidth
       >
         <EuiCodeEditor
@@ -100,14 +102,9 @@ export const StepSettings: React.FunctionComponent<Props> = ({ template, updateT
               defaultMessage="Index settings editor"
             />
           }
-          value={JSON.stringify(settings, null, 2)}
-          onChange={(value: string) => {
-            try {
-              const parsedSettings = JSON.parse(value);
-              updateTemplate({ settings: parsedSettings });
-            } catch (e) {
-              // TODO: handle error
-            }
+          value={settings}
+          onChange={(newSettings: string) => {
+            updateTemplate({ settings: newSettings });
           }}
           data-test-subj="settingsEditor"
         />

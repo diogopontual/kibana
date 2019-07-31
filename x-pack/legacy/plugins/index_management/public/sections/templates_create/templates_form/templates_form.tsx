@@ -3,8 +3,9 @@
  * or more contributor license agreements. Licensed under the Elastic License;
  * you may not use this file except in compliance with the Elastic License.
  */
-import React, { Fragment, useState } from 'react';
+import React, { Fragment, useState, useRef } from 'react';
 import { FormattedMessage } from '@kbn/i18n/react';
+import { i18n } from '@kbn/i18n';
 import {
   EuiButton,
   EuiButtonEmpty,
@@ -13,33 +14,56 @@ import {
   EuiForm,
   EuiSpacer,
 } from '@elastic/eui';
+import { MappingsEditor, Mappings } from '../../../../static/ui';
 import { Template } from '../../../../common/types';
 import { TemplateSteps } from './template_steps';
+import { TemplateValidation, validateTemplate } from '../../../services/validation';
 import { StepAliases, StepLogistics, StepMappings, StepSettings, StepReview } from './steps';
+import { StepProps } from './types';
+
+type GetMappingsEditorDataHandler = () => { isValid: boolean; data: Mappings };
 
 const defaultTemplate: Template = {
   name: '',
+  indexPatterns: [],
   version: '',
   order: '',
-  indexPatterns: [],
-  settings: {},
-  aliases: {},
+  settings: undefined,
   mappings: {},
+  aliases: undefined,
 };
-interface Props {
-  template: Template;
-  updateTemplate: (updatedTemplate: Partial<Template>) => void;
-}
 
 export const TemplatesForm: React.FunctionComponent = ({}) => {
+  // hooks
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [maxCompletedStep, setMaxCompletedStep] = useState<number>(0);
   const [template, setTemplate] = useState<Template>(defaultTemplate);
+  const [validation, setValidation] = useState<TemplateValidation>({
+    isValid: true,
+    errors: {},
+  });
 
-  const stepComponentMap: { [key: number]: React.FunctionComponent<Props> } = {
+  const getMappingsEditorData = useRef<GetMappingsEditorDataHandler>(() => ({
+    isValid: true,
+    data: {},
+  }));
+
+  const setGetMappingsEditorDataHandler = (handler: GetMappingsEditorDataHandler) =>
+    (getMappingsEditorData.current = handler);
+
+  const StepMappingsWithEditor = () => (
+    <StepMappings template={template} updateTemplate={updateTemplate} errors={errors}>
+      <MappingsEditor
+        setGetDataHandler={setGetMappingsEditorDataHandler}
+        FormattedMessage={FormattedMessage}
+      />
+    </StepMappings>
+  );
+
+  const stepComponentMap: { [key: number]: React.FunctionComponent<StepProps> } = {
     1: StepLogistics,
     2: StepSettings,
-    3: StepMappings,
+    3: StepMappingsWithEditor,
     4: StepAliases,
     5: StepReview,
   };
@@ -48,29 +72,65 @@ export const TemplatesForm: React.FunctionComponent = ({}) => {
 
   const CurrentStepComponent = stepComponentMap[currentStep];
 
+  const { errors, isValid } = validation;
+
+  const validationErrors = Object.keys(errors).reduce((acc: any, key: string) => {
+    return [...acc, ...errors[key]];
+  }, []);
+
   const updateTemplate = (updatedTemplate: Partial<Template>): void => {
     const newTemplate = { ...template, ...updatedTemplate };
+
     setTemplate(newTemplate);
   };
 
   const updateCurrentStep = (step: number) => {
-    if (maxCompletedStep < step - 1) {
+    const prevStep = step - 1;
+
+    if (maxCompletedStep < prevStep) {
       return;
     }
     setCurrentStep(step);
-    setMaxCompletedStep(step - 1);
+    setMaxCompletedStep(prevStep);
   };
 
   const onBack = () => {
-    const previousStep = currentStep - 1;
-    setCurrentStep(previousStep);
-    setMaxCompletedStep(previousStep - 1);
+    const prevStep = currentStep - 1;
+
+    setCurrentStep(prevStep);
+    setMaxCompletedStep(prevStep - 1);
   };
 
   const onNext = () => {
     const nextStep = currentStep + 1;
-    setMaxCompletedStep(Math.max(currentStep, maxCompletedStep));
-    setCurrentStep(nextStep);
+    let newValidation = validateTemplate(template);
+
+    // step 3 (mappings) utilizes the mappings plugin and requires different logic to validate and set value
+    if (currentStep === 3) {
+      const { isValid: isMappingValid, data } = getMappingsEditorData.current();
+
+      setTemplate({ ...template, mappings: data });
+
+      if (!isMappingValid) {
+        newValidation = {
+          isValid: false,
+          errors: {
+            mappings: [
+              i18n.translate('xpack.idxMgmt.templateValidation.mappingsInvalidError', {
+                defaultMessage: 'Mappings data is invalid.',
+              }),
+            ],
+          },
+        };
+      }
+    }
+
+    setValidation(newValidation);
+
+    if (newValidation.isValid) {
+      setMaxCompletedStep(Math.max(currentStep, maxCompletedStep));
+      setCurrentStep(nextStep);
+    }
   };
 
   return (
@@ -81,14 +141,14 @@ export const TemplatesForm: React.FunctionComponent = ({}) => {
         updateCurrentStep={updateCurrentStep}
       />
       <EuiSpacer size="l" />
-      <EuiForm>
-        <CurrentStepComponent template={template} updateTemplate={updateTemplate} />
+      <EuiForm isInvalid={!isValid} error={validationErrors} data-test-subj="templatesForm">
+        <CurrentStepComponent template={template} updateTemplate={updateTemplate} errors={errors} />
         <EuiSpacer size="l" />
 
         <EuiFlexGroup>
           {currentStep > 1 ? (
             <EuiFlexItem grow={false}>
-              <EuiButtonEmpty iconType="arrowLeft" onClick={() => onBack()}>
+              <EuiButtonEmpty iconType="arrowLeft" onClick={onBack}>
                 <FormattedMessage
                   id="xpack.idxMgmt.templatesForm.backButtonLabel"
                   defaultMessage="Back"
@@ -98,7 +158,7 @@ export const TemplatesForm: React.FunctionComponent = ({}) => {
           ) : null}
           {currentStep < lastStep ? (
             <EuiFlexItem grow={false}>
-              <EuiButton fill iconType="arrowRight" onClick={() => onNext()}>
+              <EuiButton fill iconType="arrowRight" onClick={onNext}>
                 <FormattedMessage
                   id="xpack.idxMgmt.templatesForm.nextButtonLabel"
                   defaultMessage="Next"
@@ -113,7 +173,7 @@ export const TemplatesForm: React.FunctionComponent = ({}) => {
                 color="secondary"
                 iconType="check"
                 onClick={() => {
-                  // TODO implement
+                  // TODO implement save
                 }}
               >
                 <FormattedMessage
